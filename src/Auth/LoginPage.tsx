@@ -2,29 +2,39 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { useLoginAdminMutation } from "../Store/Features/auth_api";
 import { setUser } from "../Store/Slices/auth_slice";
+import { useNavigate } from "react-router-dom";
+import { localStorageKeys } from "../Utils/LocalStoragekeys";
 
 export const AdminLoginPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [login] = useLoginAdminMutation();
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    var data = {
-      email,
-      password,
-    };
-    const result = await login(data).unwrap();
-    if (result?.user) {
-      dispatch(setUser(result.user));
-      // Redirect to admin dashboard or another page
-    } else {
-      setError("Invalid email or password");
+
+    try {
+      const data = { email, password };
+      const result = await login(data).unwrap();
+
+      if (result?.admin && result?.token) {
+        dispatch(setUser(result.admin));
+        localStorage.setItem(localStorageKeys.token, result?.token);
+        navigate("/admin");
+      } else {
+        setError("Invalid email or password.");
+      }
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err?.data?.message || "Login failed. Please try again.");
     }
   }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-gray-100">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">

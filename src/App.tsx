@@ -11,9 +11,11 @@ import { Settings } from "./Settings";
 import { getIsLoading } from "./Store/Slices/app_slice";
 import { Users } from "./Users";
 import { LoadingScreen } from "./Utils/LoadingScreen";
+import { getIsLoggedIn } from "./Store/Slices/auth_slice";
 
 function App() {
   const isLoading = useSelector(getIsLoading);
+  const isLoggedIn = useSelector(getIsLoggedIn);
 
   return (
     <>
@@ -25,7 +27,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              true ? ( // Replace `true` with admin auth check
+              isLoggedIn ? ( // Replace `true` with admin auth check
                 <Layout />
               ) : (
                 <Navigate to="/admin/login" />
