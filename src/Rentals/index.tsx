@@ -1,113 +1,154 @@
-import React, { useState, useMemo } from "react";
-import DataTable, { type TableColumn } from "react-data-table-component";
-
-type Rental = {
-  id: number;
-  customer: string;
-  instrument: string;
-  rentDate: string;
-  returnDate: string;
-  status: "Active" | "Returned" | "Overdue";
-};
+import { useMemo, useState } from "react";
+import {
+  useAddRentalMutation,
+  useDeleteRentalMutation,
+  useEditRentalMutation,
+  useGetRentalsQuery,
+} from "../Store/Features/rentals_api";
+import type { Rental } from "../Models/rental_model";
+import type { TableColumn } from "react-data-table-component";
+import DataTable from "react-data-table-component";
+import { RentalDialog } from "../Inventory/rental_dialog";
 
 export const Rentals: React.FC = () => {
-  // 🔹 Sample rentals (replace with API data)
-  const rentals: Rental[] = [
-    {
-      id: 1,
-      customer: "John Doe",
-      instrument: "Electric Guitar",
-      rentDate: "2025-09-01",
-      returnDate: "2025-09-10",
-      status: "Active",
-    },
-    {
-      id: 2,
-      customer: "Sarah Lee",
-      instrument: "Drum Set",
-      rentDate: "2025-08-20",
-      returnDate: "2025-08-25",
-      status: "Returned",
-    },
-    {
-      id: 3,
-      customer: "Mike Brown",
-      instrument: "Keyboard",
-      rentDate: "2025-08-30",
-      returnDate: "2025-09-05",
-      status: "Overdue",
-    },
-  ];
+  const { data, isLoading, isError } = useGetRentalsQuery();
+  const [addRental] = useAddRentalMutation();
+  const [editRental] = useEditRentalMutation();
+  const [deleteRental] = useDeleteRentalMutation();
 
   const [search, setSearch] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingRental, setEditingRental] = useState<Rental | null>(null);
 
-  // 🔹 Badge component for status
-  const StatusBadge = ({ status }: { status: Rental["status"] }) => {
-    const color =
-      status === "Active"
-        ? "bg-blue-500"
-        : status === "Returned"
-        ? "bg-green-500"
-        : "bg-red-500";
-    return (
-      <span
-        className={`${color} text-white px-3 py-1 rounded-full text-xs font-medium`}
-      >
-        {status}
-      </span>
-    );
-  };
+  const [formData, setFormData] = useState<
+    Omit<Rental, "id" | "createdAt" | "updatedAt">
+  >({
+    userId: "",
+    itemId: "",
+    startDate: new Date(),
+    endDate: new Date(),
+    totalCost: 0,
+    status: "Active",
+  });
 
-  // 🔹 Table columns
   const columns: TableColumn<Rental>[] = useMemo(
     () => [
+      { name: "ID", selector: (row) => row.id, sortable: true, width: "70px" },
+      { name: "User ID", selector: (row) => row.userId, sortable: true },
+      { name: "Item ID", selector: (row) => row.itemId, sortable: true },
       {
-        name: "ID",
-        selector: (row) => row.id.toString(),
+        name: "Start Date",
+        selector: (row) => row.startDate.toString().split("T")[0],
         sortable: true,
-        width: "70px",
       },
-      { name: "Customer", selector: (row) => row.customer, sortable: true },
-      { name: "Instrument", selector: (row) => row.instrument, sortable: true },
-      { name: "Rent Date", selector: (row) => row.rentDate, sortable: true },
       {
-        name: "Return Date",
-        selector: (row) => row.returnDate,
+        name: "End Date",
+        selector: (row) => row.endDate.toString().split("T")[0],
+        sortable: true,
+      },
+      {
+        name: "Total Cost",
+        selector: (row) => row.totalCost.toString(),
         sortable: true,
       },
       {
         name: "Status",
-        cell: (row) => <StatusBadge status={row.status} />,
+        cell: (row) => (
+          <span
+            className={`${
+              row.status === "Active"
+                ? "bg-blue-500"
+                : row.status === "Returned"
+                ? "bg-green-500"
+                : "bg-red-500"
+            } text-white px-3 py-1 rounded-full text-xs font-medium`}
+          >
+            {row.status}
+          </span>
+        ),
         sortable: true,
+      },
+      {
+        name: "Actions",
+        cell: (row) => (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEditingRental(row);
+                setFormData({ ...row });
+              }}
+              className="px-2 py-1 bg-yellow-400 rounded text-sm"
+            >
+              Edit
+            </button>
+            <button
+              onClick={async () => {
+                if (confirm("Delete this rental?")) await deleteRental(row.id);
+              }}
+              className="px-2 py-1 bg-red-500 text-white rounded text-sm"
+            >
+              Delete
+            </button>
+          </div>
+        ),
       },
     ],
     []
   );
 
-  // 🔹 Filter rentals based on search
-  const filteredData = rentals.filter((r) =>
-    [r.customer, r.instrument, r.status]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredData =
+    data?.filter((r) =>
+      [r.userId, r.itemId, r.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    ) || [];
+
+  const handleAdd = async () => {
+    //await addRental(formData);
+    setShowAddModal(false);
+    setFormData({
+      userId: "",
+      itemId: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      totalCost: 0,
+      status: "Active",
+    });
+  };
+
+  const handleEdit = async () => {
+    if (!editingRental) return;
+    await editRental({ ...editingRental, ...formData });
+    setEditingRental(null);
+  };
+
+  if (isLoading) return <div className="p-6">Loading rentals...</div>;
+  if (isError)
+    return <div className="p-6 text-red-500">Failed to load rentals</div>;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Rentals</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Rentals</h1>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          + Add Rental
+        </button>
+      </div>
 
-      {/* 🔍 Search Bar */}
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by customer, instrument, or status..."
+          placeholder="Search by user ID, item ID or status..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-1/3 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
-      {/* 📊 Data Table */}
       <DataTable
         columns={columns}
         data={filteredData}
@@ -120,6 +161,26 @@ export const Rentals: React.FC = () => {
           headCells: { style: { fontWeight: "bold", fontSize: "16px" } },
         }}
       />
+
+      {showAddModal && (
+        <RentalDialog
+          formData={formData}
+          setFormData={setFormData}
+          onClose={() => setShowAddModal(false)}
+          onSubmit={handleAdd}
+          title="Add Rental"
+        />
+      )}
+
+      {editingRental && (
+        <RentalDialog
+          formData={formData}
+          setFormData={setFormData}
+          onClose={() => setEditingRental(null)}
+          onSubmit={handleEdit}
+          title="Edit Rental"
+        />
+      )}
     </div>
   );
 };
