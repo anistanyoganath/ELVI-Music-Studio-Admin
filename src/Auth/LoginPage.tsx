@@ -25,7 +25,7 @@ export const AdminLoginPage = () => {
       if (result?.admin && result?.token) {
         dispatch(setUser(result.admin));
         localStorage.setItem(localStorageKeys.token, result?.token);
-        navigate("/admin");
+        navigate("/dashboard");
       } else {
         setError("Invalid email or password.");
       }

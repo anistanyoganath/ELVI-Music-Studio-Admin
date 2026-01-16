@@ -12,6 +12,7 @@ import { getIsLoading } from "./Store/Slices/app_slice";
 import { Users } from "./Users";
 import { LoadingScreen } from "./Utils/LoadingScreen";
 import { getIsLoggedIn } from "./Store/Slices/auth_slice";
+import { Categories } from "./Categories";
 
 function App() {
   const isLoading = useSelector(getIsLoading);
@@ -23,25 +24,25 @@ function App() {
       {isLoading && <LoadingScreen />}
       <BrowserRouter>
         <Routes>
-          {/* ===================== ADMIN ROUTES ===================== */}
           <Route
-            path="/admin"
+            path="/"
             element={
               isLoggedIn ? ( // Replace `true` with admin auth check
                 <Layout />
               ) : (
-                <Navigate to="/admin/login" />
+                <Navigate to="/login" />
               )
             }
           >
             <Route index element={<Dashboard />} />
             <Route path="inventory" element={<Inventory />} />
+            <Route path="category" element={<Categories />} />
             <Route path="rentals" element={<Rentals />} />
             <Route path="users" element={<Users />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/login" element={<AdminLoginPage />} />
 
           {/* ===================== 404 ===================== */}
           <Route path="*" element={<Navigate to="/" />} />

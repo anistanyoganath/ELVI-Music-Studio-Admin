@@ -4,12 +4,13 @@ export default function Sidebar() {
   const location = useLocation();
 
   const links = [
-    { to: "/admin", label: "Dashboard" },
-    { to: "/admin/inventory", label: "Inventory" },
-    { to: "/admin/rentals", label: "Rentals" },
-    { to: "/admin/users", label: "Users" },
-    { to: "/admin/reports", label: "Reports" },
-    { to: "/admin/settings", label: "Settings" },
+    { to: "/", label: "Dashboard" },
+    { to: "/inventory", label: "Inventory" },
+    { to: "/category", label: "Category" },
+    { to: "/rentals", label: "Rentals" },
+    { to: "/users", label: "Users" },
+    { to: "/reports", label: "Reports" },
+    { to: "/settings", label: "Settings" },
   ];
 
   return (
