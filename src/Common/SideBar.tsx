@@ -6,6 +6,7 @@ export default function Sidebar() {
   const links = [
     { to: "/", label: "Dashboard" },
     { to: "/inventory", label: "Inventory" },
+    { to: "/invoice", label: "Invoice" },
     { to: "/category", label: "Category" },
     { to: "/rentals", label: "Rentals" },
     { to: "/users", label: "Users" },

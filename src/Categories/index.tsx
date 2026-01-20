@@ -25,8 +25,6 @@ export const Categories: React.FC = () => {
 
   const columns: TableColumn<Category>[] = useMemo(
     () => [
-      { name: "ID", selector: (row) => row.id, sortable: true, width: "120px" },
-
       { name: "Name", selector: (row) => row.name, sortable: true },
 
       {
@@ -70,7 +68,7 @@ export const Categories: React.FC = () => {
         ),
       },
     ],
-    []
+    [],
   );
 
   const filteredData =

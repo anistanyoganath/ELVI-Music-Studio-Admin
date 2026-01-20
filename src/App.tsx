@@ -13,6 +13,7 @@ import { Users } from "./Users";
 import { LoadingScreen } from "./Utils/LoadingScreen";
 import { getIsLoggedIn } from "./Store/Slices/auth_slice";
 import { Categories } from "./Categories";
+import { InvoicePage } from "./Invoice";
 
 function App() {
   const isLoading = useSelector(getIsLoading);
@@ -36,6 +37,7 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="inventory" element={<Inventory />} />
+            <Route path="invoice" element={<InvoicePage />} />
             <Route path="category" element={<Categories />} />
             <Route path="rentals" element={<Rentals />} />
             <Route path="users" element={<Users />} />

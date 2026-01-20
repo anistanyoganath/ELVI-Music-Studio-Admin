@@ -13,7 +13,7 @@ export const rentalsApi = createApi({
       providesTags: ["Rental"],
     }),
     addRental: builder.mutation({
-      query: (rental: Omit<Rental, "id">) => ({
+      query: (rental: any) => ({
         url: "add",
         method: "POST",
         body: rental,

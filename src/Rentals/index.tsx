@@ -8,10 +8,14 @@ import {
 import type { Rental } from "../Models/rental_model";
 import type { TableColumn } from "react-data-table-component";
 import DataTable from "react-data-table-component";
-import { RentalDialog } from "../Inventory/rental_dialog";
+import { RentalDialog } from "./rental_dialog";
+import { useGetUsersQuery } from "../Store/Features/users_api";
+import { useGetItemsQuery } from "../Store/Features/inventory_api";
 
 export const Rentals: React.FC = () => {
   const { data, isLoading, isError } = useGetRentalsQuery();
+  const { data: users } = useGetUsersQuery();
+  const { data: items } = useGetItemsQuery({});
   const [addRental] = useAddRentalMutation();
   const [editRental] = useEditRentalMutation();
   const [deleteRental] = useDeleteRentalMutation();
@@ -59,8 +63,8 @@ export const Rentals: React.FC = () => {
               row.status === "Active"
                 ? "bg-blue-500"
                 : row.status === "Returned"
-                ? "bg-green-500"
-                : "bg-red-500"
+                  ? "bg-green-500"
+                  : "bg-red-500"
             } text-white px-3 py-1 rounded-full text-xs font-medium`}
           >
             {row.status}
@@ -93,7 +97,7 @@ export const Rentals: React.FC = () => {
         ),
       },
     ],
-    []
+    [],
   );
 
   const filteredData =
@@ -101,11 +105,11 @@ export const Rentals: React.FC = () => {
       [r.userId, r.itemId, r.status]
         .join(" ")
         .toLowerCase()
-        .includes(search.toLowerCase())
+        .includes(search.toLowerCase()),
     ) || [];
 
   const handleAdd = async () => {
-    //await addRental(formData);
+    await addRental(formData);
     setShowAddModal(false);
     setFormData({
       userId: "",
@@ -164,6 +168,8 @@ export const Rentals: React.FC = () => {
 
       {showAddModal && (
         <RentalDialog
+          users={users || []}
+          items={items || []}
           formData={formData}
           setFormData={setFormData}
           onClose={() => setShowAddModal(false)}
@@ -174,6 +180,8 @@ export const Rentals: React.FC = () => {
 
       {editingRental && (
         <RentalDialog
+          users={users || []}
+          items={items || []}
           formData={formData}
           setFormData={setFormData}
           onClose={() => setEditingRental(null)}

@@ -1,6 +1,8 @@
 import type { Rental } from "../Models/rental_model";
+import type { User } from "../Models/user_model";
+import type { Item } from "../Models/item_model";
 
-type RentalModalProps = {
+type RentalDialogProps = {
   formData: Omit<Rental, "id" | "createdAt" | "updatedAt">;
   setFormData: React.Dispatch<
     React.SetStateAction<Omit<Rental, "id" | "createdAt" | "updatedAt">>
@@ -8,54 +10,76 @@ type RentalModalProps = {
   onClose: () => void;
   onSubmit: () => void;
   title: string;
+  users: User[]; // list of users for dropdown
+  items: Item[]; // list of items for dropdown
 };
 
-export const RentalDialog: React.FC<RentalModalProps> = ({
+export const RentalDialog: React.FC<RentalDialogProps> = ({
   formData,
   setFormData,
   onClose,
   onSubmit,
   title,
+  users,
+  items,
 }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
         <h2 className="text-xl font-semibold mb-4">{title}</h2>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
-            placeholder="User ID"
+          {/* User Dropdown */}
+          <select
             value={formData.userId}
             onChange={(e) =>
               setFormData({ ...formData, userId: e.target.value })
             }
-            className="p-2 border rounded"
-          />
-          <input
-            placeholder="Item ID"
+            className="p-2 border rounded w-full"
+          >
+            <option value="">Select Customer</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.email})
+              </option>
+            ))}
+          </select>
+
+          {/* Item Dropdown */}
+          <select
             value={formData.itemId}
             onChange={(e) =>
               setFormData({ ...formData, itemId: e.target.value })
             }
-            className="p-2 border rounded"
-          />
+            className="p-2 border rounded w-full"
+          >
+            <option value="">Select Item</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name} - ${i.pricePerDay}/day
+              </option>
+            ))}
+          </select>
+
+          {/* Start / End Dates */}
           <input
             type="date"
-            placeholder="Start Date"
-            value={formData.startDate?.toString().split("T")[0] || ""}
+            value={formData.startDate?.toISOString().split("T")[0] || ""}
             onChange={(e) =>
               setFormData({ ...formData, startDate: new Date(e.target.value) })
             }
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           />
           <input
             type="date"
-            placeholder="End Date"
-            value={formData.endDate?.toString().split("T")[0] || ""}
+            value={formData.endDate?.toISOString().split("T")[0] || ""}
             onChange={(e) =>
               setFormData({ ...formData, endDate: new Date(e.target.value) })
             }
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           />
+
+          {/* Total Cost */}
           <input
             type="number"
             placeholder="Total Cost"
@@ -66,14 +90,16 @@ export const RentalDialog: React.FC<RentalModalProps> = ({
                 totalCost: parseFloat(e.target.value),
               })
             }
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           />
+
+          {/* Status */}
           <select
             value={formData.status}
             onChange={(e) =>
               setFormData({ ...formData, status: e.target.value })
             }
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full"
           >
             <option value="Active">Active</option>
             <option value="Returned">Returned</option>

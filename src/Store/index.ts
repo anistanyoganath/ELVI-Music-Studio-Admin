@@ -6,6 +6,8 @@ import { inventoryApi } from "./Features/inventory_api";
 import { rentalsApi } from "./Features/rentals_api";
 import { usersAPI } from "./Features/users_api";
 import { categoriesAPI } from "./Features/categories_api";
+import { dashboardAPI } from "./Features/dashboard_api";
+import { invoicesAPI } from "./Features/invoices_api";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +18,8 @@ export const store = configureStore({
     [rentalsApi.reducerPath]: rentalsApi.reducer,
     [usersAPI.reducerPath]: usersAPI.reducer,
     [categoriesAPI.reducerPath]: categoriesAPI.reducer,
+    [dashboardAPI.reducerPath]: dashboardAPI.reducer,
+    [invoicesAPI.reducerPath]: invoicesAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -23,6 +27,8 @@ export const store = configureStore({
       inventoryApi.middleware,
       rentalsApi.middleware,
       usersAPI.middleware,
-      categoriesAPI.middleware
+      categoriesAPI.middleware,
+      dashboardAPI.middleware,
+      invoicesAPI.middleware,
     ),
 });

@@ -1,81 +1,70 @@
+// src/Components/Dashboard.tsx
 import React, { useState } from "react";
+import {
+  useGetAvailableInstrumentsQuery,
+  useGetPendingReturnsQuery,
+  useGetRentalsQuery,
+  useGetRevenueQuery,
+} from "../Store/Features/dashboard_api";
 
 export const Dashboard: React.FC = () => {
-  // Stats configuration
+  const [selectedKey, setSelectedKey] = useState("pending");
+
+  // Fetch data from APIs
+  const {
+    data: pending,
+    isLoading: loadingPending,
+    error: errorPending,
+  } = useGetPendingReturnsQuery();
+  const {
+    data: instruments,
+    isLoading: loadingAvailable,
+    error: errorAvailable,
+  } = useGetAvailableInstrumentsQuery();
+  const {
+    data: rentals,
+    isLoading: loadingRentals,
+    error: errorRentals,
+  } = useGetRentalsQuery();
+  const {
+    data: revenue,
+    isLoading: loadingRevenue,
+    error: errorRevenue,
+  } = useGetRevenueQuery();
+
+  // Stats can be dynamic based on API
   const stats = [
     {
       key: "pending",
       label: "Pending Returns",
-      value: 8,
+      value: pending?.length || 0,
       color: "bg-yellow-500",
     },
     {
       key: "available",
       label: "Available Instruments",
-      value: 45,
+      value: instruments?.length || 0,
       color: "bg-green-500",
     },
     {
       key: "rentals",
       label: "Total Rentals",
-      value: 120,
+      value: rentals?.length || 0,
       color: "bg-blue-500",
     },
     {
       key: "revenue",
       label: "Revenue",
-      value: "$12,340",
+      value: Number(revenue?.totalRevenue || 0),
       color: "bg-purple-500",
     },
   ];
 
-  // Default selected card: Pending Returns
-  const [selectedKey, setSelectedKey] = useState("pending");
-
-  // Dummy content data (you can replace with API data later)
-  const tables = {
-    pending: [
-      {
-        id: 1,
-        customer: "John Doe",
-        instrument: "Guitar",
-        dueDate: "2025-11-10",
-      },
-      {
-        id: 2,
-        customer: "Jane Smith",
-        instrument: "Violin",
-        dueDate: "2025-11-09",
-      },
-    ],
-    available: [
-      { id: 1, name: "Acoustic Guitar", condition: "Good" },
-      { id: 2, name: "Electric Piano", condition: "Excellent" },
-    ],
-    rentals: [
-      {
-        id: 1,
-        user: "John Doe",
-        instrument: "Drum Set",
-        startDate: "2025-10-12",
-      },
-      {
-        id: 2,
-        user: "Jane Smith",
-        instrument: "Flute",
-        startDate: "2025-11-01",
-      },
-    ],
-    revenue: [
-      { id: 1, month: "October", amount: "$5,600" },
-      { id: 2, month: "November", amount: "$6,740" },
-    ],
-  };
-
-  // Render table for selected section
   const renderTable = () => {
     switch (selectedKey) {
       case "pending":
+        if (loadingPending) return <p>Loading...</p>;
+        if (errorPending) return <p>Error loading pending returns.</p>;
         return (
           <div className="mt-6 bg-white p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
@@ -90,7 +79,7 @@ export const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {tables.pending.map((row) => (
+                {pending?.map((row) => (
                   <tr
                     key={row.id}
                     className="border-b last:border-none hover:bg-gray-50"
@@ -106,6 +95,8 @@ export const Dashboard: React.FC = () => {
         );
 
       case "available":
+        if (loadingAvailable) return <p>Loading...</p>;
+        if (errorAvailable) return <p>Error loading available instruments.</p>;
         return (
           <div className="mt-6 bg-white p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
@@ -119,7 +110,7 @@ export const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {tables.available.map((row) => (
+                {instruments?.map((row) => (
                   <tr
                     key={row.id}
                     className="border-b last:border-none hover:bg-gray-50"
@@ -134,6 +125,8 @@ export const Dashboard: React.FC = () => {
         );
 
       case "rentals":
+        if (loadingRentals) return <p>Loading...</p>;
+        if (errorRentals) return <p>Error loading rentals.</p>;
         return (
           <div className="mt-6 bg-white p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
@@ -148,7 +141,7 @@ export const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {tables.rentals.map((row) => (
+                {rentals?.map((row) => (
                   <tr
                     key={row.id}
                     className="border-b last:border-none hover:bg-gray-50"
@@ -164,6 +157,8 @@ export const Dashboard: React.FC = () => {
         );
 
       case "revenue":
+        if (loadingRevenue) return <p>Loading...</p>;
+        if (errorRevenue) return <p>Error loading revenue.</p>;
         return (
           <div className="mt-6 bg-white p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
@@ -177,7 +172,7 @@ export const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {tables.revenue.map((row) => (
+                {revenue?.map((row: any) => (
                   <tr
                     key={row.id}
                     className="border-b last:border-none hover:bg-gray-50"
@@ -209,16 +204,12 @@ export const Dashboard: React.FC = () => {
               key={item.key}
               onClick={() => setSelectedKey(item.key)}
               className={`rounded-2xl shadow-md p-6 bg-white flex flex-col items-center justify-center transition-all duration-200 
-                ${
-                  isSelected
-                    ? "ring-4 ring-blue-400 scale-105"
-                    : "hover:shadow-lg"
-                }`}
+                ${isSelected ? "ring-4 ring-blue-400 scale-105" : "hover:shadow-lg"}`}
             >
               <div
                 className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mb-4 ${item.color}`}
               >
-                {typeof item.value === "number" ? item.value : item.value[0]}
+                {item.value}
               </div>
               <p className="text-gray-500 text-sm uppercase tracking-wide">
                 {item.label}
